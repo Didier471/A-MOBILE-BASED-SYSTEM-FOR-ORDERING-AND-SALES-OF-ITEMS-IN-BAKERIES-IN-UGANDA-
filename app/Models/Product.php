@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\InventoryTransaction;
 
 class Product extends Model
 {
@@ -29,8 +30,19 @@ class Product extends Model
         'status' => 'boolean',
     ];
 
+    /**
+     * Category this product belongs to.
+     */
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    /**
+     * Inventory transactions for this product.
+     */
+    public function inventoryTransactions()
+    {
+        return $this->hasMany(InventoryTransaction::class);
     }
 }
