@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\InventoryController;
+use App\Http\Controllers\Api\SupplierController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +25,12 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
 
-    // Authentication
+    /*
+    |--------------------------------------------------------------------------
+    | Authentication
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
@@ -33,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     | User Management
     |--------------------------------------------------------------------------
     */
+
     Route::apiResource('users', UserController::class);
 
     /*
@@ -40,6 +47,7 @@ Route::middleware('auth:sanctum')->group(function () {
     | Category Management
     |--------------------------------------------------------------------------
     */
+
     Route::apiResource('categories', CategoryController::class);
 
     /*
@@ -47,6 +55,7 @@ Route::middleware('auth:sanctum')->group(function () {
     | Product Management
     |--------------------------------------------------------------------------
     */
+
     Route::apiResource('products', ProductController::class);
 
     /*
@@ -54,6 +63,15 @@ Route::middleware('auth:sanctum')->group(function () {
     | Inventory Management
     |--------------------------------------------------------------------------
     */
+
     Route::apiResource('inventory', InventoryController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Supplier Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('suppliers', SupplierController::class);
 
 });
