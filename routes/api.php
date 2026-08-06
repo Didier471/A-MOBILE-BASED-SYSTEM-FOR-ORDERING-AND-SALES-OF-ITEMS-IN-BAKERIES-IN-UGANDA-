@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\SupplierController;
+use App\Http\Controllers\Api\PurchaseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,5 +74,13 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('suppliers', SupplierController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Purchase Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('purchases', PurchaseController::class);
 
 });
