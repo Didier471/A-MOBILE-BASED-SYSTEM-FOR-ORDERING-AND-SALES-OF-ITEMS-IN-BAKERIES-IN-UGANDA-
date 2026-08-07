@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\PurchaseController;
+use App\Http\Controllers\Api\CustomerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,5 +83,13 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('purchases', PurchaseController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('customers', CustomerController::class);
 
 });
