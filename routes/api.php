@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\SaleController;
 use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\DeliveryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -109,5 +110,13 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('payments', PaymentController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delivery Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('deliveries', DeliveryController::class);
 
 });

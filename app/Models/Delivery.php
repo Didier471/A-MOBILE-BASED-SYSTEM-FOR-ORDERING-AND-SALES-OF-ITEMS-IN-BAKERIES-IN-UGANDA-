@@ -5,26 +5,41 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Sale extends Model
+class Delivery extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'sale_number',
+        'sale_id',
         'customer_id',
-        'total_amount',
-        'discount',
-        'tax',
-        'grand_total',
+        'delivery_address',
+        'recipient_name',
+        'recipient_phone',
+        'delivery_fee',
+        'status',
+        'assigned_to',
+        'scheduled_at',
+        'delivered_at',
+        'notes',
         'created_by',
     ];
 
     protected $casts = [
-        'total_amount' => 'decimal:2',
-        'discount' => 'decimal:2',
-        'tax' => 'decimal:2',
-        'grand_total' => 'decimal:2',
+        'delivery_fee' => 'decimal:2',
+        'scheduled_at' => 'datetime',
+        'delivered_at' => 'datetime',
     ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sale Relationship
+    |--------------------------------------------------------------------------
+    */
+
+    public function sale()
+    {
+        return $this->belongsTo(Sale::class);
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -39,7 +54,18 @@ class Sale extends Model
 
     /*
     |--------------------------------------------------------------------------
-    | User Relationship
+    | Assigned User Relationship
+    |--------------------------------------------------------------------------
+    */
+
+    public function assignedUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Created By Relationship
     |--------------------------------------------------------------------------
     */
 
@@ -47,30 +73,4 @@ class Sale extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Sale Items Relationship
-    |--------------------------------------------------------------------------
-    */
-
-    public function items()
-    {
-        return $this->hasMany(SaleItem::class);
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Payments Relationship
-    |--------------------------------------------------------------------------
-    */
-
-    public function payments()
-    {
-        return $this->hasMany(Payment::class);
-    }
-    public function delivery()
-{
-    return $this->hasOne(Delivery::class);
-}
 }
