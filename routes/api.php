@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\InventoryController;
 use App\Http\Controllers\Api\SupplierController;
 use App\Http\Controllers\Api\PurchaseController;
 use App\Http\Controllers\Api\CustomerController;
+use App\Http\Controllers\Api\SaleController;
+use App\Http\Controllers\Api\PaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,5 +93,21 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('customers', CustomerController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sales Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('sales', SaleController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Payment Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('payments', PaymentController::class);
 
 });
