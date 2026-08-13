@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\CustomerController;
 use App\Http\Controllers\Api\SaleController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\DeliveryController;
+use App\Http\Controllers\Api\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +95,14 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('customers', CustomerController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Order Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('orders', OrderController::class);
 
     /*
     |--------------------------------------------------------------------------
