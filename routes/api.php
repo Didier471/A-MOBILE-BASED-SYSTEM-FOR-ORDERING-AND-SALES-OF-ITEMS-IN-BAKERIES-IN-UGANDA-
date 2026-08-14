@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\CategoryController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\DeliveryController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,14 +101,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Order Management
-    |--------------------------------------------------------------------------
-    */
-
-    Route::apiResource('orders', OrderController::class);
-
-    /*
-    |--------------------------------------------------------------------------
     | Sales Management
     |--------------------------------------------------------------------------
     */
@@ -128,11 +122,35 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::apiResource('deliveries', DeliveryController::class);
-/*
-|--------------------------------------------------------------------------
-| Dashboard
-|--------------------------------------------------------------------------
-*/
 
-Route::get('/dashboard', [DashboardController::class, 'index']);
+    /*
+    |--------------------------------------------------------------------------
+    | Order Management
+    |--------------------------------------------------------------------------
+    */
+
+    Route::apiResource('orders', OrderController::class);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | Reports
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/reports', [ReportController::class, 'index']);
+    Route::get('/reports/sales', [ReportController::class, 'sales']);
+    Route::get('/reports/purchases', [ReportController::class, 'purchases']);
+    Route::get('/reports/inventory', [ReportController::class, 'inventory']);
+    Route::get('/reports/payments', [ReportController::class, 'payments']);
+    Route::get('/reports/orders', [ReportController::class, 'orders']);
+    Route::get('/reports/deliveries', [ReportController::class, 'deliveries']);
+
 });
