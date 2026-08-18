@@ -273,7 +273,43 @@
 
             </div>
 
+<!-- Update Order Status -->
 
+<div class="bg-white rounded-xl border p-6">
+
+    <h3 class="text-lg font-bold mb-4">
+        Update Order Status
+    </h3>
+
+    <div class="flex flex-col md:flex-row gap-4">
+
+        <select
+            id="orderStatusSelect"
+            class="border border-gray-300 rounded-lg px-4 py-3 flex-1">
+
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="processing">Processing</option>
+            <option value="ready">Ready</option>
+            <option value="completed">Completed</option>
+
+        </select>
+
+        <button
+            id="updateOrderStatusButton"
+            class="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-700">
+
+            Update Status
+
+        </button>
+
+    </div>
+
+    <p id="statusUpdateMessage"
+       class="mt-3 text-sm hidden">
+    </p>
+
+</div>
             <!-- Notes -->
 
             <div class="bg-white rounded-xl border p-6">

@@ -778,7 +778,331 @@ if (orderSearch) {
 
 window.viewOrder = function (id) {
 
-    alert(`Order #${id} — detailed order view coming next.`);
+    window.location.href = `/orders/${id}`;
 
 };
+// =========================
+// ORDER DETAILS
+// =========================
+
+const orderDetailsContent = document.getElementById('orderDetailsContent');
+
+if (orderDetailsContent) {
+    loadOrderDetails();
+}
+
+
+async function loadOrderDetails() {
+
+    const token = localStorage.getItem('auth_token');
+
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    const parts = window.location.pathname.split('/');
+    const orderId = parts[parts.length - 1];
+
+    try {
+
+        const response = await fetch(`/api/orders/${orderId}`, {
+
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+
+        });
+
+        if (response.status === 401) {
+
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+
+            window.location.href = '/login';
+            return;
+        }
+
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        console.log('Order details:', result);
+
+        displayOrderDetails(result);
+
+    } catch (error) {
+
+        console.error('Order details error:', error);
+
+        document
+            .getElementById('orderDetailsLoading')
+            .classList.add('hidden');
+
+        document
+            .getElementById('orderDetailsError')
+            .classList.remove('hidden');
+    }
+}
+
+
+function displayOrderDetails(result) {
+
+    const order = result.data ?? result;
+
+    document
+        .getElementById('orderDetailsLoading')
+        .classList.add('hidden');
+
+    document
+        .getElementById('orderDetailsContent')
+        .classList.remove('hidden');
+
+
+    document.getElementById('detailOrderNumber').textContent =
+        order.order_number ?? '-';
+
+
+    document.getElementById('detailOrderDate').textContent =
+        order.created_at
+            ? new Date(order.created_at).toLocaleString()
+            : '-';
+
+
+    const statusElement =
+        document.getElementById('detailStatus');
+
+    statusElement.textContent =
+        order.status ?? '-';
+
+    statusElement.className =
+        'inline-block mt-1 px-3 py-1 rounded-full text-sm ' +
+        getOrderStatusClass(order.status);
+        // =========================
+// UPDATE ORDER STATUS
+// =========================
+
+const orderStatusSelect =
+    document.getElementById('orderStatusSelect');
+
+const updateOrderStatusButton =
+    document.getElementById('updateOrderStatusButton');
+
+const statusUpdateMessage =
+    document.getElementById('statusUpdateMessage');
+
+
+if (updateOrderStatusButton) {
+
+    updateOrderStatusButton.addEventListener('click', updateOrderStatus);
+
+}
+
+
+async function updateOrderStatus() {
+
+    const token = localStorage.getItem('auth_token');
+
+    const parts = window.location.pathname.split('/');
+    const orderId = parts[parts.length - 1];
+
+    const newStatus = orderStatusSelect.value;
+
+
+    updateOrderStatusButton.disabled = true;
+
+    updateOrderStatusButton.textContent = 'Updating...';
+
+
+    try {
+
+        const response = await fetch(`/api/orders/${orderId}`, {
+
+            method: 'PUT',
+
+            headers: {
+
+                'Accept': 'application/json',
+
+                'Content-Type': 'application/json',
+
+                'Authorization': `Bearer ${token}`
+
+            },
+
+            body: JSON.stringify({
+
+                status: newStatus
+
+            })
+
+        });
+
+
+        const result = await response.json();
+
+        console.log('Status update:', result);
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.message ?? `HTTP error: ${response.status}`
+            );
+
+        }
+
+
+        statusUpdateMessage.textContent =
+            'Order status updated successfully.';
+
+        statusUpdateMessage.className =
+            'mt-3 text-sm text-green-600';
+
+
+        document.getElementById('detailStatus').textContent =
+            newStatus;
+
+        document.getElementById('detailStatus').className =
+            'inline-block mt-1 px-3 py-1 rounded-full text-sm ' +
+            getOrderStatusClass(newStatus);
+
+
+    } catch (error) {
+
+        console.error('Status update error:', error);
+
+        statusUpdateMessage.textContent =
+            error.message;
+
+        statusUpdateMessage.className =
+            'mt-3 text-sm text-red-600';
+
+
+    } finally {
+
+        updateOrderStatusButton.disabled = false;
+
+        updateOrderStatusButton.textContent =
+            'Update Status';
+
+    }
+
+}
+
+
+    const customer = order.customer;
+
+    document.getElementById('detailCustomerName').textContent =
+        customer?.name ?? 'Walk-in Customer';
+
+    document.getElementById('detailCustomerEmail').textContent =
+        customer?.email ?? '-';
+
+    document.getElementById('detailCustomerPhone').textContent =
+        customer?.phone ?? '-';
+
+
+    document.getElementById('detailTotal').textContent =
+        formatCurrency(order.total_amount);
+
+    document.getElementById('detailDiscount').textContent =
+        formatCurrency(order.discount);
+
+    document.getElementById('detailTax').textContent =
+        formatCurrency(order.tax);
+
+    document.getElementById('detailGrandTotal').textContent =
+        formatCurrency(order.grand_total);
+
+
+    document.getElementById('detailNotes').textContent =
+        order.notes ?? 'No notes';
+
+
+    const items = order.items ?? [];
+
+    const table =
+        document.getElementById('orderItemsTable');
+
+
+    if (!items.length) {
+
+        table.innerHTML = `
+            <tr>
+                <td colspan="4"
+                    class="text-center px-6 py-8 text-gray-500">
+                    No items found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    table.innerHTML = items.map(item => {
+
+        return `
+            <tr class="border-b">
+
+                <td class="px-6 py-4 font-medium">
+                    ${escapeHtml(
+                        item.product?.name ?? 'Unknown Product'
+                    )}
+                </td>
+
+                <td class="px-6 py-4">
+                    ${item.quantity ?? 0}
+                </td>
+
+                <td class="px-6 py-4">
+                    ${formatCurrency(item.unit_price)}
+                </td>
+
+                <td class="px-6 py-4 font-medium">
+                    ${formatCurrency(item.subtotal)}
+                </td>
+
+            </tr>
+        `;
+
+    }).join('');
+}
+
+
+function formatCurrency(value) {
+
+    return `UGX ${Number(value ?? 0).toLocaleString()}`;
+
+}
+
+
+function getOrderStatusClass(status) {
+
+    switch (status) {
+
+        case 'pending':
+            return 'bg-yellow-100 text-yellow-700';
+
+        case 'confirmed':
+            return 'bg-purple-100 text-purple-700';
+
+        case 'processing':
+            return 'bg-blue-100 text-blue-700';
+
+        case 'ready':
+            return 'bg-indigo-100 text-indigo-700';
+
+        case 'completed':
+            return 'bg-green-100 text-green-700';
+
+        default:
+            return 'bg-gray-100 text-gray-700';
+    }
+
+}
 });
