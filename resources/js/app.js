@@ -1105,4 +1105,246 @@ function getOrderStatusClass(status) {
     }
 
 }
+// =========================
+// SALES
+// =========================
+
+const salesTable = document.getElementById('salesTable');
+
+if (salesTable) {
+    loadSales();
+}
+
+
+async function loadSales() {
+
+    const token = localStorage.getItem('auth_token');
+
+    if (!token) {
+        window.location.href = '/login';
+        return;
+    }
+
+    try {
+
+        const response = await fetch('/api/sales', {
+
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+
+        });
+
+
+        if (response.status === 401) {
+
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+
+            window.location.href = '/login';
+            return;
+        }
+
+
+        if (!response.ok) {
+            throw new Error(`HTTP error: ${response.status}`);
+        }
+
+
+        const result = await response.json();
+
+        console.log('Sales data:', result);
+
+        displaySales(result);
+
+
+    } catch (error) {
+
+        console.error('Sales error:', error);
+
+        salesTable.innerHTML = `
+            <tr>
+                <td colspan="4"
+                    class="text-center px-6 py-10 text-red-600">
+                    Failed to load sales.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+
+function displaySales(result) {
+
+    const sales = result.data?.data ?? result.data ?? [];
+
+    const totalElement =
+        document.getElementById('salesTotal');
+
+    const countElement =
+        document.getElementById('salesCount');
+
+    const averageElement =
+        document.getElementById('salesAverage');
+
+
+    if (!Array.isArray(sales)) {
+
+        console.error('Unexpected sales response:', result);
+
+        return;
+    }
+
+
+    const total = sales.reduce((sum, sale) => {
+
+        return sum + Number(
+            sale.grand_total ??
+            sale.total_amount ??
+            0
+        );
+
+    }, 0);
+
+
+    const count = sales.length;
+
+    const average = count > 0
+        ? total / count
+        : 0;
+
+
+    totalElement.textContent =
+        `UGX ${formatNumber(total)}`;
+
+
+    countElement.textContent =
+        count;
+
+
+    averageElement.textContent =
+        `UGX ${formatNumber(average)}`;
+
+
+    if (!sales.length) {
+
+        salesTable.innerHTML = `
+            <tr>
+                <td colspan="4"
+                    class="text-center px-6 py-10 text-gray-500">
+                    No sales records found.
+                </td>
+            </tr>
+        `;
+
+        return;
+    }
+
+
+    salesTable.innerHTML = sales.map(sale => {
+
+        const customer =
+            sale.customer?.name ??
+            'Walk-in Customer';
+
+
+        const amount =
+            Number(
+                sale.grand_total ??
+                sale.total_amount ??
+                0
+            );
+
+
+        const date =
+            sale.created_at
+                ? new Date(sale.created_at).toLocaleDateString()
+                : '-';
+
+
+        return `
+            <tr class="border-b border-gray-100 hover:bg-gray-50">
+
+                <td class="px-6 py-4 font-medium">
+                    ${escapeHtml(
+                        sale.sale_number ??
+                        '-'
+                    )}
+                </td>
+
+
+                <td class="px-6 py-4">
+                    ${escapeHtml(customer)}
+                </td>
+
+
+                <td class="px-6 py-4">
+                    UGX ${formatNumber(amount)}
+                </td>
+
+
+                <td class="px-6 py-4">
+                    ${date}
+                </td>
+
+            </tr>
+        `;
+
+    }).join('');
+
+
+    setupSalesSearch(sales);
+
+}
+
+
+function setupSalesSearch(sales) {
+
+    const search =
+        document.getElementById('salesSearch');
+
+
+    if (!search) {
+        return;
+    }
+
+
+    search.addEventListener('input', function () {
+
+        const value =
+            this.value.toLowerCase().trim();
+
+
+        const rows =
+            document.querySelectorAll('#salesTable tr');
+
+
+        rows.forEach(row => {
+
+            row.style.display =
+                row.textContent
+                    .toLowerCase()
+                    .includes(value)
+                    ? ''
+                    : 'none';
+
+        });
+
+    });
+
+}
+
+
+function formatNumber(number) {
+
+    return Number(number).toLocaleString(
+        'en-UG',
+        {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        }
+    );
+
+}
 });

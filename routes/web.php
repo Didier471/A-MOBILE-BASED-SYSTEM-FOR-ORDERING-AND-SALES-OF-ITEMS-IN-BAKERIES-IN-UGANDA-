@@ -23,3 +23,9 @@ Route::get('/orders', function () {
 Route::get('/orders/{id}', function ($id) {
     return view('order-details');
 });
+Route::get('/sales', function () {
+    return view('sales');
+});
+Route::get('/payments', function () {
+    return view('payments');
+});
