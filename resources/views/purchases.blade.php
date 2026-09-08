@@ -4,51 +4,48 @@
 
 <header class="bg-white border-b border-gray-200 px-8 py-5">
 <h2 class="text-2xl font-bold text-gray-900">
-                Payments
+                Purchases
             </h2>
 <p class="text-sm text-gray-500">
-                Track and manage customer payments
+                Monitor bakery purchases and supplier transactions
             </p>
 </header><section class="p-8">
-<!-- Summary Cards -->
+<!-- Summary -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-<!-- Total Received -->
 <div class="bg-white rounded-xl border p-6">
 <p class="text-sm text-gray-500">
-                        Total Received
+                        Total Purchases
                     </p>
-<p class="text-3xl font-bold mt-2" id="paymentsTotal">
+<p class="text-3xl font-bold mt-2" id="purchasesTotal">
                         UGX 0
                     </p>
 </div>
-<!-- Number of Payments -->
 <div class="bg-white rounded-xl border p-6">
 <p class="text-sm text-gray-500">
-                        Number of Payments
+                        Number of Purchases
                     </p>
-<p class="text-3xl font-bold mt-2" id="paymentsCount">
+<p class="text-3xl font-bold mt-2" id="purchasesCount">
                         0
                     </p>
 </div>
-<!-- Completed Payments -->
 <div class="bg-white rounded-xl border p-6">
 <p class="text-sm text-gray-500">
-                        Completed Payments
+                        Average Purchase
                     </p>
-<p class="text-3xl font-bold text-green-600 mt-2" id="paymentsCompleted">
-                        0
+<p class="text-3xl font-bold mt-2" id="purchasesAverage">
+                        UGX 0
                     </p>
 </div>
 </div>
 <!-- Search -->
 <div class="bg-white rounded-xl border p-5 mb-6">
-<input class="w-full md:w-96 border border-gray-300 rounded-lg px-4 py-3" id="paymentsSearch" placeholder="Search payments..." type="text"/>
+<input class="w-full md:w-96 border border-gray-300 rounded-lg px-4 py-3" id="purchasesSearch" placeholder="Search purchases..." type="text"/>
 </div>
-<!-- Payments Table -->
+<!-- Table -->
 <div class="bg-white rounded-xl border overflow-hidden">
 <div class="px-6 py-5 border-b">
 <h3 class="text-lg font-bold">
-                        Payment Records
+                        Purchase Records
                     </h3>
 </div>
 <div class="overflow-x-auto">
@@ -56,27 +53,24 @@
 <thead class="bg-gray-50 border-b">
 <tr>
 <th class="text-left px-6 py-4 text-sm font-semibold">
-                                    Sale Number
+                                    Purchase Number
+                                </th>
+<th class="text-left px-6 py-4 text-sm font-semibold">
+                                    Supplier
                                 </th>
 <th class="text-left px-6 py-4 text-sm font-semibold">
                                     Amount
-                                </th>
-<th class="text-left px-6 py-4 text-sm font-semibold">
-                                    Method
-                                </th>
-<th class="text-left px-6 py-4 text-sm font-semibold">
-                                    Status
                                 </th>
 <th class="text-left px-6 py-4 text-sm font-semibold">
                                     Date
                                 </th>
 </tr>
 </thead>
-<tbody id="paymentsTable">
+<tbody id="purchasesTable">
 <tr>
-<td class="text-center px-6 py-10 text-gray-500" colspan="5">
+<td class="text-center px-6 py-10 text-gray-500" colspan="4">
 
-                                    Loading payments...
+                                    Loading purchases...
 
                                 </td>
 </tr>

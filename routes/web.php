@@ -29,3 +29,21 @@ Route::get('/sales', function () {
 Route::get('/payments', function () {
     return view('payments');
 });
+Route::get('/purchases', function () {
+    return view('purchases');
+});
+Route::get('/deliveries', function () {
+    return view('deliveries');
+});
+Route::get('/customers', function () {
+    return view('customers');
+});
+Route::get('/suppliers', function () {
+    return view('suppliers');
+});
+Route::get('/reports', function () {
+    return view('reports');
+});
+Route::get('/users', function () {
+    return view('users');
+});

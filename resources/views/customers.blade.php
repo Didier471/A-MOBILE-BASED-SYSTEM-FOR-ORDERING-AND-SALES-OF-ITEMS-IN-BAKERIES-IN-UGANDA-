@@ -4,51 +4,48 @@
 
 <header class="bg-white border-b border-gray-200 px-8 py-5">
 <h2 class="text-2xl font-bold text-gray-900">
-                Payments
+                Customers
             </h2>
 <p class="text-sm text-gray-500">
-                Track and manage customer payments
+                Manage bakery customers
             </p>
 </header><section class="p-8">
-<!-- Summary Cards -->
+<!-- Summary -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-<!-- Total Received -->
 <div class="bg-white rounded-xl border p-6">
 <p class="text-sm text-gray-500">
-                        Total Received
+                        Total Customers
                     </p>
-<p class="text-3xl font-bold mt-2" id="paymentsTotal">
-                        UGX 0
-                    </p>
-</div>
-<!-- Number of Payments -->
-<div class="bg-white rounded-xl border p-6">
-<p class="text-sm text-gray-500">
-                        Number of Payments
-                    </p>
-<p class="text-3xl font-bold mt-2" id="paymentsCount">
+<p class="text-3xl font-bold mt-2" id="customersTotal">
                         0
                     </p>
 </div>
-<!-- Completed Payments -->
 <div class="bg-white rounded-xl border p-6">
 <p class="text-sm text-gray-500">
-                        Completed Payments
+                        Active Customers
                     </p>
-<p class="text-3xl font-bold text-green-600 mt-2" id="paymentsCompleted">
+<p class="text-3xl font-bold text-green-600 mt-2" id="customersActive">
+                        0
+                    </p>
+</div>
+<div class="bg-white rounded-xl border p-6">
+<p class="text-sm text-gray-500">
+                        Inactive Customers
+                    </p>
+<p class="text-3xl font-bold text-gray-500 mt-2" id="customersInactive">
                         0
                     </p>
 </div>
 </div>
 <!-- Search -->
 <div class="bg-white rounded-xl border p-5 mb-6">
-<input class="w-full md:w-96 border border-gray-300 rounded-lg px-4 py-3" id="paymentsSearch" placeholder="Search payments..." type="text"/>
+<input class="w-full md:w-96 border border-gray-300 rounded-lg px-4 py-3" id="customersSearch" placeholder="Search customers..." type="text"/>
 </div>
-<!-- Payments Table -->
+<!-- Table -->
 <div class="bg-white rounded-xl border overflow-hidden">
 <div class="px-6 py-5 border-b">
 <h3 class="text-lg font-bold">
-                        Payment Records
+                        Customer Records
                     </h3>
 </div>
 <div class="overflow-x-auto">
@@ -56,27 +53,24 @@
 <thead class="bg-gray-50 border-b">
 <tr>
 <th class="text-left px-6 py-4 text-sm font-semibold">
-                                    Sale Number
+                                    Name
                                 </th>
 <th class="text-left px-6 py-4 text-sm font-semibold">
-                                    Amount
+                                    Phone
                                 </th>
 <th class="text-left px-6 py-4 text-sm font-semibold">
-                                    Method
+                                    Email
                                 </th>
 <th class="text-left px-6 py-4 text-sm font-semibold">
                                     Status
                                 </th>
-<th class="text-left px-6 py-4 text-sm font-semibold">
-                                    Date
-                                </th>
 </tr>
 </thead>
-<tbody id="paymentsTable">
+<tbody id="customersTable">
 <tr>
-<td class="text-center px-6 py-10 text-gray-500" colspan="5">
+<td class="text-center px-6 py-10 text-gray-500" colspan="4">
 
-                                    Loading payments...
+                                    Loading customers...
 
                                 </td>
 </tr>
