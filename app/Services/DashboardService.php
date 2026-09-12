@@ -110,6 +110,8 @@ class DashboardService
                 'total_sales' => Sale::count(),
                 'total_purchases' => Purchase::count(),
                 'total_deliveries' => Delivery::count(),
+                'total_users' => User::count(),
+                'active_users' => User::count(),
             ],
 
             'sales' => $this->salesForRange($start, $end),
@@ -126,6 +128,7 @@ class DashboardService
             'top_customers' => $this->topCustomers($start, $end),
             'staff_performance' => $this->staffPerformance($start, $end),
             'delivery_performance' => $this->deliveryPerformance($start, $end),
+            'users_by_role' => User::with('roles')->get()->groupBy(fn ($u) => $u->roles->first()?->name ?? 'Unassigned')->map->count(),
             'alerts' => $this->alertsFeed(),
 
             'low_stock_items' => $this->lowStockItems(),
@@ -153,9 +156,10 @@ class DashboardService
             ],
 
             'sales' => $this->salesForRange($start, $end),
+            'profit' => $this->profitForRange($start, $end),
+            'payments' => $this->paymentsForRange($start, $end),
             'orders' => $this->orderStatusCounts(),
             'inventory' => $this->inventoryCounts(),
-            'payments' => $this->paymentsForRange($start, $end),
             'deliveries' => $this->deliveryStatusCounts(),
 
             'top_products' => $this->topProducts($start, $end),
@@ -180,6 +184,7 @@ class DashboardService
                 'total_orders' => Order::count(),
                 'total_sales' => Sale::count(),
                 'total_customers' => Customer::count(),
+                'total_products' => Product::count(),
             ],
 
             'today' => [
@@ -204,6 +209,9 @@ class DashboardService
             ],
 
             'orders' => $this->orderStatusCounts(),
+            'payments' => $this->paymentsForRange($start, $end),
+            'sales' => $this->salesForRange($start, $end),
+            'top_products' => $this->topProducts($start, $end),
 
             'recent_orders' => Order::with('customer')->latest()->take(8)->get(),
             'recent_sales' => Sale::with('customer')->latest()->take(8)->get(),
@@ -224,6 +232,8 @@ class DashboardService
             ],
 
             'stock' => [
+                'total_units' => (int) Product::sum('stock_quantity'),
+                'stock_value' => round((float) Product::selectRaw('SUM(stock_quantity * cost_price) as value')->value('value'), 2),
                 'low_stock_items' => $this->lowStockItems(15),
                 'out_of_stock_items' => Product::where('stock_quantity', '<=', 0)
                     ->orderBy('name')
@@ -256,6 +266,12 @@ class DashboardService
 
             'stock_needs' => $this->inventoryCounts(),
             'low_stock_items' => $this->lowStockItems(15),
+            'top_suppliers' => Supplier::leftJoin('purchases', 'purchases.supplier_id', '=', 'suppliers.id')
+                ->select('suppliers.id', 'suppliers.name')
+                ->selectRaw('COUNT(purchases.id) as purchases_count')
+                ->selectRaw('COALESCE(SUM(purchases.total_amount), 0) as total_spend')
+                ->groupBy('suppliers.id', 'suppliers.name')
+                ->orderByDesc('total_spend')->take(5)->get(),
             'recent_purchases' => Purchase::latest()->take(8)->get(),
         ];
     }
@@ -270,7 +286,9 @@ class DashboardService
                 'total_deliveries' => Delivery::count(),
                 'pending' => Delivery::where('status', 'pending')->count(),
                 'assigned' => Delivery::where('status', 'assigned')->count(),
+                'out_for_delivery' => Delivery::where('status', 'out_for_delivery')->count(),
                 'delivered' => Delivery::where('status', 'delivered')->count(),
+                'cancelled' => Delivery::where('status', 'cancelled')->count(),
             ],
 
             // What this specific rider actually has on their plate today.

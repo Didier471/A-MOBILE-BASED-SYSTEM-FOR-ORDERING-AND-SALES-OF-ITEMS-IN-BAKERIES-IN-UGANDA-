@@ -29,9 +29,11 @@
 <form class="p-6 space-y-4" id="productForm">
 <div>
 <label class="block text-sm font-medium mb-1">
-                    Category ID
+                    Category
                 </label>
-<input class="w-full border border-gray-300 rounded-lg px-4 py-3" id="productCategoryId" required="" type="number"/>
+<select class="w-full border border-gray-300 rounded-lg px-4 py-3" id="productCategoryId" required>
+    <option value="">Loading categories...</option>
+</select>
 </div>
 <div>
 <label class="block text-sm font-medium mb-1">

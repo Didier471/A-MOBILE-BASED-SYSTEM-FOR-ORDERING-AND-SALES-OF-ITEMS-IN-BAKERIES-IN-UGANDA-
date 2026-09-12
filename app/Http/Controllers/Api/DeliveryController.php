@@ -9,6 +9,16 @@ use App\Models\Delivery;
 
 class DeliveryController extends Controller
 {
+    public function staff()
+    {
+        return response()->json(
+            \App\Models\User::role('Delivery Staff')
+                ->select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get()
+        );
+    }
+
     public function index()
     {
         return response()->json(

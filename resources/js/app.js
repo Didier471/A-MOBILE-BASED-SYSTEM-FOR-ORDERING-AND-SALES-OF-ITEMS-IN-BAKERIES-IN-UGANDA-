@@ -246,11 +246,32 @@ const productModal = document.getElementById('productModal');
 const closeProductModal = document.getElementById('closeProductModal');
 const cancelProductBtn = document.getElementById('cancelProductBtn');
 const productForm = document.getElementById('productForm');
+const productCategorySelect = document.getElementById('productCategoryId');
+
+async function loadProductCategories() {
+    if (!productCategorySelect) return;
+    const token = localStorage.getItem('auth_token');
+    try {
+        const response = await fetch('/api/categories', {
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        const categories = result.data?.data ?? result.data ?? [];
+        productCategorySelect.innerHTML = '<option value="">Select category...</option>' +
+            categories.map(category => `<option value="${category.id}">${escapeHtml(category.name)}</option>`).join('');
+    } catch (error) {
+        productCategorySelect.innerHTML = '<option value="">Unable to load categories</option>';
+    }
+}
 
 if (addProductBtn) {
 
     addProductBtn.addEventListener('click', () => {
         productModal.classList.remove('hidden');
+        loadProductCategories();
     });
 
 }
@@ -2601,8 +2622,8 @@ function drawBarChart(canvasId, labels, series) {
     ctx.font = '12px Instrument Sans, Arial, sans-serif';
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#6b7280';
-    ctx.strokeStyle = '#e5e7eb';
+    ctx.fillStyle = '#020000';
+    ctx.strokeStyle = '#6d1616';
 
     for (let i = 0; i <= tickCount; i++) {
         const value = (maxValue / tickCount) * i;
@@ -2624,7 +2645,7 @@ function drawBarChart(canvasId, labels, series) {
         });
     });
 
-    ctx.fillStyle = '#374151';
+    ctx.fillStyle = '#0341a5';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
     labels.forEach((label, i) => {
@@ -2637,7 +2658,7 @@ function drawBarChart(canvasId, labels, series) {
         const x = padding.left + i * 145;
         const y = height - 18;
         ctx.fillStyle = s.fill; ctx.fillRect(x, y - 9, 10, 10);
-        ctx.fillStyle = '#4b5563'; ctx.fillText(s.label, x + 16, y);
+        ctx.fillStyle = '#d12047'; ctx.fillText(s.label, x + 16, y);
     });
 }
 
@@ -2655,12 +2676,12 @@ function drawPieChart(canvasId, data) {
 
     const total = data.reduce((sum, item) => sum + Number(item.total || 0), 0);
     if (!total) {
-        ctx.fillStyle = '#9ca3af'; ctx.font = '14px Instrument Sans, Arial, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#0050da'; ctx.font = '14px Instrument Sans, Arial, sans-serif'; ctx.textAlign = 'center';
         ctx.fillText('No completed payments in this period', width / 2, height / 2);
         return;
     }
 
-    const fills = ['#111827', '#4b5563', '#9ca3af', '#d1d5db', '#6b7280'];
+    const fills = ['#e00e31', '#7a4c58', '#184394', '#bd9e15', '#6b7280'];
     const cx = width / 2, cy = height / 2, radius = Math.min(width, height) * 0.36;
     let start = -Math.PI / 2;
     data.forEach((item, i) => {
@@ -2670,7 +2691,7 @@ function drawPieChart(canvasId, data) {
         start += slice;
     });
     ctx.beginPath(); ctx.arc(cx, cy, radius * 0.55, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
-    ctx.fillStyle = '#111827'; ctx.font = 'bold 14px Instrument Sans, Arial, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = '#3768d1'; ctx.font = 'bold 14px Instrument Sans, Arial, sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('Total', cx, cy - 7);
     ctx.font = '12px Instrument Sans, Arial, sans-serif'; ctx.fillText(`UGX ${formatNumber(total)}`, cx, cy + 12);
 }
@@ -2678,8 +2699,8 @@ function drawPieChart(canvasId, data) {
 function renderMonthlyPerformanceChart(rows) {
     const labels = rows.map(r => { const d = new Date(`${r.month}-01T00:00:00`); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); });
     drawBarChart('monthlyPerformanceChart', labels, [
-        { label: 'Sales', values: rows.map(r => r.sales), fill: '#111827' },
-        { label: 'Purchases', values: rows.map(r => r.purchases), fill: '#9ca3af' }
+        { label: 'Sales', values: rows.map(r => r.sales), fill: '#d40202' },
+        { label: 'Purchases', values: rows.map(r => r.purchases), fill: '#311468' }
     ]);
 }
 
@@ -3011,4 +3032,109 @@ function setupUsersSearch() {
 
     });
 }
+});
+// ============================================================================
+// GLOBAL CREATE ACTIONS
+// ============================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('auth_token');
+    if (!token) return;
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const role = Array.isArray(user.roles) ? user.roles[0] : user.role;
+    const path = window.location.pathname;
+    const actionMap = {
+        '/orders': { label: '+ Add Order', type: 'order', color: 'blue', roles: ['Admin','Manager','Sales Staff'] },
+        '/sales': { label: '+ Record Sale', type: 'sale', color: 'green', roles: ['Admin','Manager','Sales Staff'] },
+        '/payments': { label: '+ Add Payment', type: 'payment', color: 'purple', roles: ['Admin','Manager','Sales Staff'] },
+        '/purchases': { label: '+ New Purchase', type: 'purchase', color: 'orange', roles: ['Admin','Manager','Procurement Staff'] },
+        '/customers': { label: '+ Add Customer', type: 'customer', color: 'blue', roles: ['Admin','Manager','Sales Staff'] },
+        '/suppliers': { label: '+ Add Supplier', type: 'supplier', color: 'orange', roles: ['Admin','Manager','Procurement Staff'] },
+        '/deliveries': { label: '+ New Delivery', type: 'delivery', color: 'red', roles: ['Admin','Manager'] },
+        '/inventory': { label: '+ Update Stock', type: 'inventory', color: 'green', roles: ['Admin','Manager','Inventory Staff'] },
+        '/users': { label: '+ Add User', type: 'user', color: 'purple', roles: ['Admin'] }
+    };
+    const action = actionMap[path];
+    if (!action || !action.roles.includes(role)) return;
+    const header = document.querySelector('main > header');
+    if (!header) return;
+    let inner = header.firstElementChild;
+    if (!inner || !inner.classList.contains('flex')) {
+        const nodes = Array.from(header.childNodes);
+        inner = document.createElement('div');
+        inner.className = 'flex flex-col md:flex-row md:items-center md:justify-between gap-3';
+        nodes.forEach(n => inner.appendChild(n));
+        header.appendChild(inner);
+    }
+    if (header.querySelector('.hl-page-action')) return;
+    const button = document.createElement('button');
+    button.type='button'; button.className=`hl-page-action ${action.color}`; button.textContent=action.label;
+    button.addEventListener('click',()=>openGlobalCreateModal(action.type));
+    inner.appendChild(button);
+
+    const configs={
+        order:['Create New Order','Capture a customer order and its line items.','Create Order'],
+        sale:['Record New Sale','Complete a sale and update stock.','Record Sale'],
+        payment:['Add Payment','Record a payment against an existing sale.','Save Payment'],
+        purchase:['Create New Purchase','Record supplier stock received into the bakery.','Create Purchase'],
+        customer:['Add Customer','Create a new bakery customer.','Save Customer'],
+        supplier:['Add Supplier','Create a new supplier record.','Save Supplier'],
+        delivery:['Create Delivery','Schedule and assign a customer delivery.','Create Delivery'],
+        inventory:['Update Inventory','Record stock in, stock out or an adjustment.','Update Stock'],
+        user:['Add System User','Create a staff account and assign a role.','Create User']
+    };
+    const esc=v=>{const d=document.createElement('div');d.textContent=v??'';return d.innerHTML;};
+    const headers=(json=true)=>{const h={Accept:'application/json',Authorization:`Bearer ${token}`};if(json)h['Content-Type']='application/json';return h;};
+    async function get(url){const r=await fetch(url,{headers:headers(false)});const j=await r.json().catch(()=>({}));if(r.status===401){localStorage.removeItem('auth_token');localStorage.removeItem('user');location.href='/login';throw new Error('Session expired.');}if(!r.ok)throw new Error(j.message||'Unable to load data.');return j;}
+    async function list(url){const j=await get(url);return Array.isArray(j)?j:(Array.isArray(j.data?.data)?j.data.data:Array.isArray(j.data)?j.data:[]);}
+    const opts=(items,label=x=>x.name)=>`<option value="">Select...</option>`+items.map(x=>`<option value="${x.id}">${esc(label(x))}</option>`).join('');
+
+    async function openGlobalCreateModal(type){
+        const cfg=configs[type];let form='';
+        try{
+            if(['order','sale','purchase'].includes(type)){
+                const [products,customers]=await Promise.all([list('/api/products'),list('/api/customers')]);
+                const customer=type==='purchase'?`<div><label>Supplier</label><select name="supplier_id" required data-supplier-select><option value="">Loading suppliers...</option></select></div><div><label>Purchase Date</label><input name="purchase_date" type="date" value="${new Date().toISOString().slice(0,10)}" required></div>`:`<div><label>Customer</label><select name="customer_id">${opts(customers)}</select><p class="text-xs text-gray-500 mt-1">Leave blank for a walk-in customer.</p></div>`;
+                const po=opts(products,x=>`${x.name} — UGX ${Number(x.selling_price||0).toLocaleString('en-UG')}`);
+                form=`<div class="space-y-4">${customer}<div><label>Items</label><div id="globalItemRows"><div class="hl-item-row grid grid-cols-1 md:grid-cols-3 gap-3"><div><label>Product</label><select name="product_id" required>${po}</select></div><div><label>Quantity</label><input name="quantity" type="number" min="1" value="1" required></div>${type==='purchase'?'<div><label>Unit Cost</label><input name="unit_cost" type="number" min="0" step="0.01" required></div>':''}</div></div><button type="button" id="addItemRow" class="text-sm font-bold text-blue-600 hover:underline">+ Add another item</button></div>${type!=='purchase'?`<div class="grid grid-cols-2 gap-3"><div><label>Discount</label><input name="discount" type="number" min="0" step="0.01" value="0"></div><div><label>Tax</label><input name="tax" type="number" min="0" step="0.01" value="0"></div></div><div><label>Notes</label><textarea name="notes" rows="3"></textarea></div>`:'<div><label>Remarks</label><textarea name="remarks" rows="3"></textarea></div>'}</div>`;
+            } else if(type==='payment'){
+                const sales=await list('/api/sales');form=`<div class="space-y-4"><div><label>Sale</label><select name="sale_id" required>${opts(sales,x=>`${x.sale_number} — UGX ${Number(x.grand_total||0).toLocaleString('en-UG')}`)}</select></div><div class="grid grid-cols-2 gap-3"><div><label>Amount</label><input name="amount" type="number" min="0.01" step="0.01" required></div><div><label>Payment Method</label><select name="payment_method" required><option value="cash">Cash</option><option value="mobile_money">Mobile Money</option><option value="card">Card</option><option value="bank_transfer">Bank Transfer</option></select></div></div><div><label>Transaction Reference</label><input name="transaction_reference"></div><div><label>Status</label><select name="status"><option value="completed">Completed</option><option value="pending">Pending</option><option value="failed">Failed</option></select></div><div><label>Remarks</label><textarea name="remarks" rows="3"></textarea></div></div>`;
+            } else if(type==='delivery'){
+                const [sales,customers,staff]=await Promise.all([list('/api/sales'),list('/api/customers'),list('/api/deliveries/staff')]);form=`<div class="space-y-4"><div class="grid grid-cols-2 gap-3"><div><label>Sale</label><select name="sale_id" required>${opts(sales,x=>x.sale_number)}</select></div><div><label>Customer</label><select name="customer_id">${opts(customers)}</select></div></div><div class="grid grid-cols-2 gap-3"><div><label>Recipient Name</label><input name="recipient_name" required></div><div><label>Recipient Phone</label><input name="recipient_phone" required></div></div><div><label>Delivery Address</label><textarea name="delivery_address" rows="2" required></textarea></div><div class="grid grid-cols-2 gap-3"><div><label>Delivery Fee</label><input name="delivery_fee" type="number" min="0" step="0.01" value="0"></div><div><label>Assign Delivery Staff</label><select name="assigned_to">${opts(staff)}</select></div></div><div><label>Scheduled At</label><input name="scheduled_at" type="datetime-local"></div><div><label>Notes</label><textarea name="notes" rows="3"></textarea></div></div>`;
+            } else if(type==='inventory'){const products=await list('/api/products');form=`<div class="space-y-4"><div><label>Product</label><select name="product_id" required>${opts(products,x=>`${x.name} — Stock ${x.stock_quantity}`)}</select></div><div class="grid grid-cols-2 gap-3"><div><label>Action</label><select name="type"><option value="stock_in">Stock In</option><option value="stock_out">Stock Out</option><option value="adjustment">Adjustment</option></select></div><div><label>Quantity</label><input name="quantity" type="number" min="1" required></div></div><div><label>Remarks</label><textarea name="remarks" rows="3"></textarea></div></div>`;
+            } else if(type==='user') form=`<div class="space-y-4"><div><label>Full Name</label><input name="name" required></div><div><label>Email</label><input name="email" type="email" required></div><div><label>Password</label><input name="password" type="password" minlength="8" required></div><div><label>Role</label><select name="role" required><option value="">Select role...</option><option>Admin</option><option>Manager</option><option>Sales Staff</option><option>Inventory Staff</option><option>Procurement Staff</option><option>Delivery Staff</option></select></div></div>`;
+            else if(type==='customer') form=`<div class="space-y-4"><div><label>Full Name</label><input name="name" required></div><div class="grid grid-cols-2 gap-3"><div><label>Phone</label><input name="phone" required></div><div><label>Email</label><input name="email" type="email"></div></div><div><label>Address</label><textarea name="address" rows="3"></textarea></div><div><label>Status</label><select name="status"><option value="1">Active</option><option value="0">Inactive</option></select></div></div>`;
+            else if(type==='supplier') form=`<div class="space-y-4"><div><label>Supplier Name</label><input name="name" required></div><div class="grid grid-cols-2 gap-3"><div><label>Contact Person</label><input name="contact_person"></div><div><label>Phone</label><input name="phone" required></div></div><div><label>Email</label><input name="email" type="email"></div><div><label>Address</label><textarea name="address" rows="3"></textarea></div><div><label>Status</label><select name="status"><option value="1">Active</option><option value="0">Inactive</option></select></div></div>`;
+        }catch(e){alert(e.message);return;}
+        const modal=document.createElement('div');modal.id='globalCreateModal';modal.className='hl-modal-backdrop';modal.innerHTML=`<div class="hl-modal" role="dialog" aria-modal="true"><div class="hl-modal-header"><div class="flex items-center justify-between gap-4"><div><h3 class="text-xl font-bold">${cfg[0]}</h3><p class="text-white/70 text-sm mt-1">${cfg[1]}</p></div><button type="button" data-close class="text-white/70 hover:text-white text-2xl">×</button></div></div><form id="globalCreateForm" class="hl-form">${form}<div id="globalCreateError" class="hl-form-error"></div><div class="hl-form-footer"><button type="button" data-close class="hl-secondary">Cancel</button><button type="submit" class="hl-primary">${cfg[2]}</button></div></form></div>`;document.body.appendChild(modal);
+        modal.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>modal.remove()));modal.addEventListener('click',e=>{if(e.target===modal)modal.remove()});
+        const supplier=modal.querySelector('[data-supplier-select]');if(supplier)list('/api/suppliers').then(x=>supplier.innerHTML=opts(x)).catch(e=>supplier.innerHTML='<option value="">Unable to load suppliers</option>');
+        const add=modal.querySelector('#addItemRow');if(add)add.addEventListener('click',()=>{const c=modal.querySelector('#globalItemRows'),first=c.querySelector('.hl-item-row'),clone=first.cloneNode(true);clone.querySelectorAll('input').forEach(i=>i.value=i.name==='quantity'?'1':'');clone.querySelectorAll('select').forEach(s=>s.selectedIndex=0);c.appendChild(clone)});
+        modal.querySelector('#globalCreateForm').addEventListener('submit',e=>submitGlobalForm(e,type,modal,cfg[2]));
+    }
+
+    async function submitGlobalForm(event,type,modal,submitLabel){
+        event.preventDefault();
+        const form=event.currentTarget, error=modal.querySelector('#globalCreateError'), submit=form.querySelector('button[type="submit"]');
+        error.style.display='none'; submit.disabled=true; submit.textContent='Saving...';
+        const fd=new FormData(form), get=n=>fd.get(n), number=v=>(v===''||v===null?null:Number(v));
+        let payload, endpoint;
+        try{
+            if(type==='customer'){endpoint='customers';payload={name:get('name'),phone:get('phone'),email:get('email')||null,address:get('address')||null,status:Boolean(Number(get('status')))};}
+            else if(type==='supplier'){endpoint='suppliers';payload={name:get('name'),contact_person:get('contact_person')||null,phone:get('phone'),email:get('email')||null,address:get('address')||null,status:Boolean(Number(get('status')))};}
+            else if(type==='user'){endpoint='users';payload={name:get('name'),email:get('email'),password:get('password'),role:get('role')};}
+            else if(type==='inventory'){endpoint='inventory';payload={product_id:number(get('product_id')),type:get('type'),quantity:number(get('quantity')),remarks:get('remarks')||null};}
+            else if(type==='payment'){endpoint='payments';payload={sale_id:number(get('sale_id')),amount:number(get('amount')),payment_method:get('payment_method'),status:get('status'),transaction_reference:get('transaction_reference')||null,remarks:get('remarks')||null};}
+            else if(type==='delivery'){endpoint='deliveries';payload={sale_id:number(get('sale_id')),customer_id:number(get('customer_id')),delivery_address:get('delivery_address'),recipient_name:get('recipient_name'),recipient_phone:get('recipient_phone'),delivery_fee:number(get('delivery_fee')||0),status:get('assigned_to')?'assigned':'pending',assigned_to:number(get('assigned_to')),scheduled_at:get('scheduled_at')||null,notes:get('notes')||null};}
+            else {const items=[...form.querySelectorAll('.hl-item-row')].map(row=>({product_id:Number(row.querySelector('[name="product_id"]').value),quantity:Number(row.querySelector('[name="quantity"]').value),...(type==='purchase'?{unit_cost:Number(row.querySelector('[name="unit_cost"]').value)}:{})}));endpoint=type==='purchase'?'purchases':type==='sale'?'sales':'orders';if(type==='purchase')payload={supplier_id:number(get('supplier_id')),purchase_date:get('purchase_date'),remarks:get('remarks')||null,items};else payload={customer_id:number(get('customer_id')),discount:number(get('discount')||0),tax:number(get('tax')||0),items,...(type==='order'?{status:'pending',notes:get('notes')||null}:{})};}
+            const response=await fetch(`/api/${endpoint}`,{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(payload)});
+            const result=await response.json().catch(()=>({}));
+            if(!response.ok){const validation=result.errors?Object.values(result.errors).flat().join(' '):'';throw new Error(validation||result.message||'Could not save this record.');}
+            modal.remove();alert(result.message||'Record saved successfully.');refreshCurrentPage();
+        }catch(e){error.textContent=e.message;error.style.display='block';submit.disabled=false;submit.textContent=submitLabel;}
+    }
+
+    function refreshCurrentPage(){
+        const map={'/orders':'loadOrders','/sales':'loadSales','/payments':'loadPayments','/purchases':'loadPurchases','/customers':'loadCustomers','/suppliers':'loadSuppliers','/deliveries':'loadDeliveries','/inventory':'loadInventory','/users':'loadUsers'};
+        const fn=window[map[path]]; if(typeof fn==='function')fn(); else location.reload();
+    }
 });

@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\User;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -34,8 +35,14 @@ class DashboardCache
         foreach (self::ROLES as $role) {
             Cache::forget("dashboard:{$role}:{$today}:{$today}:shared");
 
-            if ($affectedUserId && in_array($role, ['Sales Staff', 'Delivery Staff', 'Procurement Staff'])) {
-                Cache::forget("dashboard:{$role}:{$today}:{$today}:{$affectedUserId}");
+            if (in_array($role, ['Sales Staff', 'Delivery Staff', 'Procurement Staff'])) {
+                $userIds = $affectedUserId
+                    ? [$affectedUserId]
+                    : User::role($role)->pluck('id')->all();
+
+                foreach ($userIds as $userId) {
+                    Cache::forget("dashboard:{$role}:{$today}:{$today}:{$userId}");
+                }
             }
         }
     }

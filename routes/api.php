@@ -151,6 +151,7 @@ Route::middleware('auth:sanctum')->group(function () {
     */
 
     Route::middleware('permission:manage deliveries')->group(function () {
+        Route::get('/deliveries/staff', [DeliveryController::class, 'staff']);
         Route::apiResource('deliveries', DeliveryController::class);
     });
 

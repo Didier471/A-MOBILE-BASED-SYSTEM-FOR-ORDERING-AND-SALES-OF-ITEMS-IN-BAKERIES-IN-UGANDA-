@@ -7,3 +7,194 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* --------------------------------------------------------------------------
+   Hot Loaf UI refresh
+   -------------------------------------------------------------------------- */
+
+:root {
+    --hl-ink: #172033;
+    --hl-muted: #667085;
+    --hl-border: #e7eaf0;
+    --hl-bg: #f5f7fb;
+    --hl-red: #dc2626;
+    --hl-orange: #f97316;
+    --hl-blue: #2563eb;
+    --hl-green: #16a34a;
+    --hl-purple: #7c3aed;
+}
+
+body.bg-gray-100 {
+    background:
+        radial-gradient(circle at top left, rgba(220, 38, 38, .08), transparent 28%),
+        radial-gradient(circle at top right, rgba(37, 99, 235, .07), transparent 25%),
+        var(--hl-bg) !important;
+}
+
+body > div.flex > aside {
+    background: linear-gradient(180deg, #171b2b 0%, #22283a 100%) !important;
+    color: #fff;
+    border-right: 0 !important;
+    box-shadow: 8px 0 30px rgba(15, 23, 42, .08);
+}
+
+body > div.flex > aside .border-b,
+body > div.flex > aside .border-t {
+    border-color: rgba(255,255,255,.10) !important;
+}
+
+body > div.flex > aside h1 { color: #fff !important; }
+body > div.flex > aside p { color: rgba(255,255,255,.60); }
+
+body > div.flex > aside .role-menu {
+    color: rgba(255,255,255,.78);
+    transition: transform .18s ease, background .18s ease, color .18s ease;
+}
+
+body > div.flex > aside .role-menu:hover {
+    background: rgba(255,255,255,.10) !important;
+    color: #fff;
+    transform: translateX(3px);
+}
+
+body > div.flex > aside .role-menu.bg-gray-900 {
+    background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+    color: #fff !important;
+    box-shadow: 0 8px 18px rgba(220,38,38,.25);
+}
+
+body > div.flex > aside #logoutButton {
+    background: linear-gradient(135deg, #ef4444, #b91c1c) !important;
+}
+
+main > header:not(#globalCreateModal) {
+    background: linear-gradient(135deg, #ffffff 0%, #f8faff 55%, #fff7f5 100%) !important;
+    border-bottom-color: var(--hl-border) !important;
+    box-shadow: 0 1px 0 rgba(15,23,42,.03);
+}
+
+main > header h2 {
+    color: var(--hl-ink) !important;
+    letter-spacing: -.02em;
+}
+
+main > header p { color: var(--hl-muted) !important; }
+
+main > section {
+    background: transparent;
+}
+
+main > section > .grid > div.bg-white,
+main > section > div.bg-white {
+    border-color: var(--hl-border) !important;
+    box-shadow: 0 8px 24px rgba(15,23,42,.045);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+main > section > .grid > div.bg-white:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(15,23,42,.08);
+}
+
+main > section > .grid > div.bg-white:nth-child(4n+1) {
+    background: linear-gradient(135deg, #fff 0%, #eff6ff 100%) !important;
+}
+main > section > .grid > div.bg-white:nth-child(4n+2) {
+    background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%) !important;
+}
+main > section > .grid > div.bg-white:nth-child(4n+3) {
+    background: linear-gradient(135deg, #fff 0%, #fff7ed 100%) !important;
+}
+main > section > .grid > div.bg-white:nth-child(4n) {
+    background: linear-gradient(135deg, #fff 0%, #faf5ff 100%) !important;
+}
+
+main > section > div.bg-white input,
+main > section > div.bg-white select,
+main > section > div.bg-white textarea {
+    background: #fbfcfe;
+}
+
+main table thead {
+    background: linear-gradient(90deg, #f8fafc, #eef2ff) !important;
+}
+
+main table tbody tr {
+    transition: background .15s ease;
+}
+
+main table tbody tr:hover {
+    background: #f8fbff !important;
+}
+
+.hl-page-action {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    border: 0;
+    border-radius: .8rem;
+    padding: .7rem 1rem;
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 8px 18px rgba(37,99,235,.20);
+    cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+.hl-page-action:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(37,99,235,.25); }
+.hl-page-action.red { background: linear-gradient(135deg,#dc2626,#ef4444); }
+.hl-page-action.blue { background: linear-gradient(135deg,#2563eb,#3b82f6); }
+.hl-page-action.green { background: linear-gradient(135deg,#16a34a,#22c55e); }
+.hl-page-action.orange { background: linear-gradient(135deg,#ea580c,#f97316); }
+.hl-page-action.purple { background: linear-gradient(135deg,#7c3aed,#8b5cf6); }
+
+.hl-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, .62);
+    backdrop-filter: blur(5px);
+}
+.hl-modal {
+    width: min(760px, 100%);
+    max-height: 92vh;
+    overflow: auto;
+    border-radius: 1.25rem;
+    background: #fff;
+    box-shadow: 0 30px 80px rgba(15,23,42,.25);
+}
+.hl-modal-header {
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+    background: linear-gradient(135deg,#172033,#2d3854);
+}
+.hl-form { padding: 1.5rem; }
+.hl-form label { display:block; font-size:.82rem; font-weight:700; color:#344054; margin-bottom:.35rem; }
+.hl-form input, .hl-form select, .hl-form textarea {
+    width:100%; border:1px solid #dfe3ea; border-radius:.7rem; padding:.7rem .8rem;
+    outline:none; background:#fbfcfe;
+}
+.hl-form input:focus, .hl-form select:focus, .hl-form textarea:focus {
+    border-color:#93c5fd; box-shadow:0 0 0 3px rgba(37,99,235,.10); background:#fff;
+}
+.hl-form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.hl-item-row { padding:1rem; border:1px solid #e7eaf0; border-radius:.9rem; background:#f8fafc; margin-bottom:.75rem; }
+.hl-form-error { margin-top:.8rem; padding:.7rem .9rem; border-radius:.7rem; background:#fef2f2; color:#b91c1c; font-size:.85rem; display:none; }
+.hl-form-footer { display:flex; justify-content:flex-end; gap:.7rem; margin-top:1.25rem; }
+.hl-secondary { border:1px solid #d0d5dd; background:#fff; color:#344054; border-radius:.7rem; padding:.7rem 1rem; font-weight:700; }
+.hl-primary { border:0; background:linear-gradient(135deg,#dc2626,#ef4444); color:#fff; border-radius:.7rem; padding:.7rem 1rem; font-weight:700; }
+
+@media (max-width: 768px) {
+    .hl-form-grid { grid-template-columns:1fr; }
+    main > header { padding-left:1rem !important; padding-right:1rem !important; }
+    main > section { padding:1rem !important; }
+}
+
+#addProductBtn {
+    background: linear-gradient(135deg,#dc2626,#ef4444) !important;
+    border: 0 !important;
+    box-shadow: 0 8px 18px rgba(220,38,38,.20);
+}
