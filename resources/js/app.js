@@ -2559,6 +2559,9 @@ async function loadReports() {
         console.log('Reports data:', result);
 
         displayReports(result);
+        renderMonthlyPerformanceChart(result.monthly_performance || []);
+        renderPaymentMethodsChart(result.payment_methods || []);
+        renderMonthlyPerformance(result.monthly_performance || []);
 
     } catch (error) {
 
@@ -2573,6 +2576,143 @@ async function loadReports() {
             </tr>
         `;
     }
+}
+
+
+function drawBarChart(canvasId, labels, series) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(320, rect.width);
+    const height = Math.max(260, rect.height);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const padding = { top: 20, right: 20, bottom: 55, left: 75 };
+    const chartW = width - padding.left - padding.right;
+    const chartH = height - padding.top - padding.bottom;
+    const maxValue = Math.max(1, ...series.flatMap(s => s.values.map(Number)));
+    const tickCount = 5;
+
+    ctx.font = '12px Instrument Sans, Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#6b7280';
+    ctx.strokeStyle = '#e5e7eb';
+
+    for (let i = 0; i <= tickCount; i++) {
+        const value = (maxValue / tickCount) * i;
+        const y = padding.top + chartH - (value / maxValue) * chartH;
+        ctx.beginPath(); ctx.moveTo(padding.left, y); ctx.lineTo(width - padding.right, y); ctx.stroke();
+        ctx.fillText(`UGX ${formatNumber(value)}`, padding.left - 10, y);
+    }
+
+    const groupW = chartW / Math.max(1, labels.length);
+    const barW = Math.min(28, (groupW * 0.65) / Math.max(1, series.length));
+    series.forEach((s, si) => {
+        s.values.forEach((raw, i) => {
+            const value = Number(raw || 0);
+            const barH = (value / maxValue) * chartH;
+            const x = padding.left + i * groupW + groupW / 2 - ((series.length * barW) / 2) + si * barW;
+            const y = padding.top + chartH - barH;
+            ctx.fillStyle = s.fill;
+            ctx.fillRect(x, y, Math.max(2, barW - 4), barH);
+        });
+    });
+
+    ctx.fillStyle = '#374151';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    labels.forEach((label, i) => {
+        const x = padding.left + i * groupW + groupW / 2;
+        ctx.fillText(label, x, padding.top + chartH + 12);
+    });
+
+    ctx.textAlign = 'left';
+    series.forEach((s, i) => {
+        const x = padding.left + i * 145;
+        const y = height - 18;
+        ctx.fillStyle = s.fill; ctx.fillRect(x, y - 9, 10, 10);
+        ctx.fillStyle = '#4b5563'; ctx.fillText(s.label, x + 16, y);
+    });
+}
+
+function drawPieChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const width = Math.max(240, rect.width);
+    const height = Math.max(240, rect.height);
+    canvas.width = width * dpr; canvas.height = height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+
+    const total = data.reduce((sum, item) => sum + Number(item.total || 0), 0);
+    if (!total) {
+        ctx.fillStyle = '#9ca3af'; ctx.font = '14px Instrument Sans, Arial, sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('No completed payments in this period', width / 2, height / 2);
+        return;
+    }
+
+    const fills = ['#111827', '#4b5563', '#9ca3af', '#d1d5db', '#6b7280'];
+    const cx = width / 2, cy = height / 2, radius = Math.min(width, height) * 0.36;
+    let start = -Math.PI / 2;
+    data.forEach((item, i) => {
+        const slice = (Number(item.total || 0) / total) * Math.PI * 2;
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, radius, start, start + slice); ctx.closePath();
+        ctx.fillStyle = fills[i % fills.length]; ctx.fill();
+        start += slice;
+    });
+    ctx.beginPath(); ctx.arc(cx, cy, radius * 0.55, 0, Math.PI * 2); ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.fillStyle = '#111827'; ctx.font = 'bold 14px Instrument Sans, Arial, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('Total', cx, cy - 7);
+    ctx.font = '12px Instrument Sans, Arial, sans-serif'; ctx.fillText(`UGX ${formatNumber(total)}`, cx, cy + 12);
+}
+
+function renderMonthlyPerformanceChart(rows) {
+    const labels = rows.map(r => { const d = new Date(`${r.month}-01T00:00:00`); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); });
+    drawBarChart('monthlyPerformanceChart', labels, [
+        { label: 'Sales', values: rows.map(r => r.sales), fill: '#111827' },
+        { label: 'Purchases', values: rows.map(r => r.purchases), fill: '#9ca3af' }
+    ]);
+}
+
+function renderPaymentMethodsChart(rows) {
+    drawPieChart('paymentMethodsChart', rows);
+    const legend = document.getElementById('paymentLegend');
+    if (!legend) return;
+    const total = rows.reduce((sum, r) => sum + Number(r.total || 0), 0);
+    legend.innerHTML = rows.length ? rows.map((r, i) => {
+        const pct = total ? ((Number(r.total || 0) / total) * 100).toFixed(1) : '0.0';
+        const name = String(r.payment_method || 'Unknown').replace(/_/g, ' ');
+        return `<div class="flex items-center justify-between text-sm"><span class="capitalize">${name}</span><strong>${pct}%</strong></div>`;
+    }).join('') : '<p class="text-sm text-gray-500">No completed payments found.</p>';
+}
+
+function renderMonthlyPerformance(rows) {
+    const container = document.getElementById('monthlyPerformance');
+    if (!container) return;
+    if (!rows.length) {
+        container.innerHTML = '<div class="px-6 py-8 text-gray-500">No monthly data is available for the selected period.</div>';
+        return;
+    }
+    container.innerHTML = rows.map(row => {
+        const date = new Date(`${row.month}-01T00:00:00`);
+        const monthName = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        const change = row.sales_change_percent;
+        const changeText = change === null || change === undefined ? 'No previous month comparison' : `${change >= 0 ? '+' : ''}${change}% vs previous month`;
+        const badge = row.performance === 'Improving' ? 'bg-green-100 text-green-700' : row.performance === 'Needs attention' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700';
+        return `<div class="px-6 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div class="flex-1"><div class="flex items-center gap-3 mb-1"><h4 class="font-semibold text-gray-900">${monthName}</h4><span class="text-xs font-semibold px-2 py-1 rounded-full ${badge}">${row.performance}</span></div><p class="text-sm text-gray-600">${row.description}</p></div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm min-w-[280px]"><div><span class="text-gray-500 block">Sales</span><strong>UGX ${formatNumber(row.sales)}</strong></div><div><span class="text-gray-500 block">Orders</span><strong>${Number(row.orders || 0)}</strong></div><div><span class="text-gray-500 block">Change</span><strong>${changeText}</strong></div></div>
+        </div>`;
+    }).join('');
 }
 
 

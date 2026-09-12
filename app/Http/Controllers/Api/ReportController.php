@@ -56,6 +56,107 @@ class ReportController extends Controller
             $orders->whereDate('created_at', '<=', $to);
         }
 
+        $monthlySalesQuery = Sale::query();
+        $monthlyPurchasesQuery = Purchase::query();
+        $monthlyOrdersQuery = Order::query();
+        $monthlyPaymentsQuery = Payment::where('status', 'completed');
+
+        if ($from) {
+            $monthlySalesQuery->whereDate('created_at', '>=', $from);
+            $monthlyPurchasesQuery->whereDate('created_at', '>=', $from);
+            $monthlyOrdersQuery->whereDate('created_at', '>=', $from);
+            $monthlyPaymentsQuery->whereDate('created_at', '>=', $from);
+        }
+
+        if ($to) {
+            $monthlySalesQuery->whereDate('created_at', '<=', $to);
+            $monthlyPurchasesQuery->whereDate('created_at', '<=', $to);
+            $monthlyOrdersQuery->whereDate('created_at', '<=', $to);
+            $monthlyPaymentsQuery->whereDate('created_at', '<=', $to);
+        }
+
+        $monthlySales = $monthlySalesQuery
+            ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('SUM(grand_total) as total'))
+            ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $monthlyPurchases = $monthlyPurchasesQuery
+            ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('SUM(total_amount) as total'))
+            ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $monthlyOrders = $monthlyOrdersQuery
+            ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('COUNT(*) as total'))
+            ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $monthlyPayments = $monthlyPaymentsQuery
+            ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('SUM(amount) as total'))
+            ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y-%m')"))
+            ->orderBy('month')
+            ->get()
+            ->keyBy('month');
+
+        $months = collect($monthlySales->keys())
+            ->merge($monthlyPurchases->keys())
+            ->merge($monthlyOrders->keys())
+            ->merge($monthlyPayments->keys())
+            ->unique()
+            ->sort()
+            ->values();
+
+        $monthlyPerformance = $months->map(function ($month, $index) use ($monthlySales, $monthlyPurchases, $monthlyOrders, $monthlyPayments) {
+            $salesTotal = (float) ($monthlySales->get($month)->total ?? 0);
+            $purchaseTotal = (float) ($monthlyPurchases->get($month)->total ?? 0);
+            $orderTotal = (int) ($monthlyOrders->get($month)->total ?? 0);
+            $paymentTotal = (float) ($monthlyPayments->get($month)->total ?? 0);
+
+            $previousMonth = $index > 0 ? $months[$index - 1] : null;
+            $previousSales = $previousMonth ? (float) ($monthlySales->get($previousMonth)->total ?? 0) : null;
+            $change = $previousSales !== null && $previousSales > 0
+                ? (($salesTotal - $previousSales) / $previousSales) * 100
+                : null;
+
+            if ($change === null) {
+                $description = $salesTotal > 0
+                    ? 'Sales were recorded this month. This provides the starting point for future monthly comparisons.'
+                    : 'No sales were recorded during this month.';
+                $performance = $salesTotal > 0 ? 'Starting performance' : 'No sales';
+            } elseif ($change > 0) {
+                $description = 'Sales increased compared with the previous month, indicating stronger revenue performance.';
+                $performance = 'Improving';
+            } elseif ($change < 0) {
+                $description = 'Sales decreased compared with the previous month. This month may need closer review of orders and sales activity.';
+                $performance = 'Needs attention';
+            } else {
+                $description = 'Sales remained at the same level as the previous month, showing stable revenue performance.';
+                $performance = 'Stable';
+            }
+
+            return [
+                'month' => $month,
+                'sales' => round($salesTotal, 2),
+                'purchases' => round($purchaseTotal, 2),
+                'orders' => $orderTotal,
+                'payments' => round($paymentTotal, 2),
+                'sales_change_percent' => $change !== null ? round($change, 1) : null,
+                'performance' => $performance,
+                'description' => $description,
+            ];
+        });
+
+        $paymentMethods = $paymentsQuery
+            ->select('payment_method', DB::raw('COUNT(*) as number_of_payments'), DB::raw('SUM(amount) as total'))
+            ->groupBy('payment_method')
+            ->orderByDesc('total')
+            ->get();
+
         return response()->json([
             'message' => 'Report generated successfully.',
 
@@ -70,6 +171,8 @@ class ReportController extends Controller
                 'total_purchases' => $purchases,
                 'total_orders' => $orders->count(),
             ],
+            'monthly_performance' => $monthlyPerformance,
+            'payment_methods' => $paymentMethods,
         ]);
     }
 

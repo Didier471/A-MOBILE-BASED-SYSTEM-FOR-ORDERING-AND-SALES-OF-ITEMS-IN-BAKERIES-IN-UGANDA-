@@ -67,6 +67,42 @@
                     </p>
 </div>
 </div>
+
+<!-- Performance Charts -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-xl border p-6 xl:col-span-2">
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h3 class="text-lg font-bold">Monthly Sales Performance</h3>
+                <p class="text-sm text-gray-500">Sales and purchases by month</p>
+            </div>
+        </div>
+        <div class="h-80">
+            <canvas id="monthlyPerformanceChart" class="w-full h-full"></canvas>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl border p-6">
+        <h3 class="text-lg font-bold">Payment Distribution</h3>
+        <p class="text-sm text-gray-500 mb-5">Completed payments by method</p>
+        <div class="h-64">
+            <canvas id="paymentMethodsChart" class="w-full h-full"></canvas>
+        </div>
+        <div id="paymentLegend" class="mt-4 space-y-2"></div>
+    </div>
+</div>
+
+<!-- Monthly Performance Descriptions -->
+<div class="bg-white rounded-xl border overflow-hidden mb-8">
+    <div class="px-6 py-5 border-b">
+        <h3 class="text-lg font-bold">Monthly Performance Analysis</h3>
+        <p class="text-sm text-gray-500 mt-1">A short interpretation of sales performance for each month in the selected period.</p>
+    </div>
+    <div id="monthlyPerformance" class="divide-y divide-gray-100">
+        <div class="px-6 py-6 text-gray-500">Loading monthly performance...</div>
+    </div>
+</div>
+
 <!-- Report Results -->
 <div class="bg-white rounded-xl border overflow-hidden">
 <div class="px-6 py-5 border-b">
